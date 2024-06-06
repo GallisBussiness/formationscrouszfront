@@ -1,8 +1,6 @@
-// Custom components
-import React from "react";
 
 function InputField(props) {
-  const { label, id, extra, type, placeholder, variant, state, disabled } =
+  const { label, id, extra, type, placeholder, variant, state, disabled,value,onChange } =
     props;
 
   return (
@@ -17,6 +15,8 @@ function InputField(props) {
       </label>
       <input
         disabled={disabled}
+        value={value}
+        onChange={onChange}
         type={type}
         id={id}
         placeholder={placeholder}

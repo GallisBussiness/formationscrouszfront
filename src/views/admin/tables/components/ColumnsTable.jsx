@@ -1,4 +1,3 @@
-import CardMenu from "components/card/CardMenu";
 import Card from "components/card";
 import React, { useMemo } from "react";
 import {
@@ -9,7 +8,7 @@ import {
 } from "react-table";
 
 const ColumnsTable = (props) => {
-  const { columnsData, tableData } = props;
+  const { columnsData, tableData,nom,nbr } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
@@ -38,9 +37,9 @@ const ColumnsTable = (props) => {
     <Card extra={"w-full pb-10 p-4 h-full"}>
       <header className="relative flex items-center justify-between">
         <div className="text-xl font-bold text-navy-700 dark:text-white">
-          4-Columns Table
+          {nom}
         </div>
-        <CardMenu />
+       <span className="font-semibold">TOTAL : {nbr} </span> 
       </header>
 
       <div className="mt-8 overflow-x-scroll xl:overflow-x-hidden">
@@ -69,25 +68,25 @@ const ColumnsTable = (props) => {
                 <tr {...row.getRowProps()} key={index}>
                   {row.cells.map((cell, index) => {
                     let data;
-                    if (cell.column.Header === "NAME") {
+                    if (cell.column.Header === "PRENOM") {
                       data = (
                         <p className="text-sm font-bold text-navy-700 dark:text-white">
                           {cell.value}
                         </p>
                       );
-                    } else if (cell.column.Header === "PROGRESS") {
+                    } else if (cell.column.Header === "NOM") {
                       data = (
                         <p className="mr-[10px] text-sm font-semibold text-navy-700 dark:text-white">
-                          {cell.value}%
+                          {cell.value}
                         </p>
                       );
-                    } else if (cell.column.Header === "QUANTITY") {
+                    } else if (cell.column.Header === "CONTACT") {
                       data = (
                         <p className="text-sm font-bold text-navy-700 dark:text-white">
                           {cell.value}
                         </p>
                       );
-                    } else if (cell.column.Header === "DATE") {
+                    } else if (cell.column.Header === "FONCTION") {
                       data = (
                         <p className="text-sm font-bold text-navy-700 dark:text-white">
                           {cell.value}

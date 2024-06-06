@@ -1,135 +1,283 @@
-import Banner from "./components/Banner";
-import NFt2 from "assets/img/nfts/Nft2.png";
-import NFt4 from "assets/img/nfts/Nft4.png";
-import NFt3 from "assets/img/nfts/Nft3.png";
-import NFt5 from "assets/img/nfts/Nft5.png";
-import NFt6 from "assets/img/nfts/Nft6.png";
-import avatar1 from "assets/img/avatars/avatar1.png";
-import avatar2 from "assets/img/avatars/avatar2.png";
-import avatar3 from "assets/img/avatars/avatar3.png";
+import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
+import { useEffect, useState } from "react";
+import { ConsultantService } from "../../../services/consultant.service";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { yupResolver } from 'mantine-form-yup-resolver';
+import * as yup from 'yup';
+import { DataTable } from "mantine-datatable";
+import WeeklyRevenue from "../default/components/WeeklyRevenue";
+import { AiOutlinePlus } from "react-icons/ai";
+import { ActionIcon, Box, Button, Drawer, LoadingOverlay, Popover, Select, TextInput } from "@mantine/core";
+import InputField from "components/fields/InputField";
+import { FaTrash } from "react-icons/fa";
+import { BsFillPenFill } from "react-icons/bs";
+import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 
-import tableDataTopCreators from "views/admin/marketplace/variables/tableDataTopCreators.json";
-import { tableColumnsTopCreators } from "views/admin/marketplace/variables/tableColumnsTopCreators";
-import HistoryCard from "./components/HistoryCard";
-import TopCreatorTable from "./components/TableTopCreators";
-import NftCard from "components/card/NftCard";
+
+const ConsultantSchema = yup.object().shape({
+  prenom: yup.string().required('Invalide Prenom'),
+  civilite: yup.string().required('Invalide Civilite'),
+  nom: yup.string().required('Invalide Nom'),
+  contact: yup.string().required('Invalide Contact'),
+  nom_cabinet: yup.string().required('Invalide Nom'),
+});
+
+const PAGE_SIZE = 10;
 
 const Marketplace = () => {
+  const [opened, { open, close }] = useDisclosure(false);
+  const [openedU, { open:openU, close:closeU }] = useDisclosure(false);
+  const [query, setQuery] = useState('');
+  const [debouncedQuery] = useDebouncedValue(query, 200);
+  const [page, setPage] = useState(1);
+  const [records, setRecords] = useState([]);
+  const qc = useQueryClient();
+  const consultantService = new ConsultantService();
+  const key = ['consultants'];
+  const {data:consultants,isLoading} = useQuery({ queryKey: key, queryFn:() => consultantService.getAll() })
+
+  const form = useForm({
+    initialValues: {
+      prenom: '',
+      civilite:'',
+      nom: '',
+      contact: '',
+      nom_cabinet: '',
+    },
+    validate: yupResolver(ConsultantSchema),
+  });
+  const formU = useForm({
+    initialValues: {
+    _id:'', 
+    prenom: '',
+    civilite:'',
+    nom: '',
+    contact: '',
+    nom_cabinet: '',
+    },
+    validate: yupResolver(ConsultantSchema),
+  });
+
+  const {mutate:createConsultant,isLoading:loadingCreate} = useMutation({
+   mutationFn: (data) => consultantService.create(data),
+   onSuccess: () => {
+    close();
+    qc.invalidateQueries(key);
+    form.reset()
+   }
+});
+
+const {mutate:updateConsultant,isLoading:loadingUpdate} = useMutation({
+ mutationFn:(data) => consultantService.update(data.id, data.data),
+ onSuccess: () => {
+  closeU();
+  qc.invalidateQueries(key);
+ }
+});
+
+const {mutate:deleteConsultant,isLoading:loadingDelete} = useMutation({
+    mutationFn: (id) => consultantService.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries(key);
+    }
+});
+
+
+  const confirm = (id) => {
+    deleteConsultant(id)
+  };
+  
+  const cancel = () => {
+    notifications.show({message: "L'action a été annulé !"});
+  };
+
+  const onCreate = (values) => {
+    createConsultant(values);
+  }
+
+  const onUpdate = (values) => {
+    const {_id,createdAt,updatedAt,__v,...rest} = values;
+    updateConsultant({id: _id,data: rest });
+}
+
+const handleUpdate  = (data) => {
+  formU.setValues(data);
+  openU();
+}
+
+const filtered = (Consultant = []) => {
+  return Consultant?.filter(({ prenom,nom,contact,nom_cabinet }) => {
+    if (
+      debouncedQuery !== '' &&
+      !`${prenom}${nom}${nom_cabinet}${contact}`.toLowerCase().includes(debouncedQuery.trim().toLowerCase())
+    )
+      return false;
+  
+    return true;
+  })
+}
+
+useEffect(() => {
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE;
+  setRecords(filtered(consultants).slice(from, to) ?? []);
+}, [consultants,debouncedQuery,page]);
+
   return (
-    <div className="mt-3 grid h-full grid-cols-1 gap-5 xl:grid-cols-2 2xl:grid-cols-3">
-      <div className="col-span-1 h-fit w-full xl:col-span-1 2xl:col-span-2">
-        {/* NFt Banner */}
-        <Banner />
-
-        {/* NFt Header */}
-        <div className="mb-4 mt-5 flex flex-col justify-between px-4 md:flex-row md:items-center">
-          <h4 className="ml-1 text-2xl font-bold text-navy-700 dark:text-white">
-            Trending NFTs
-          </h4>
-          <ul className="mt-4 flex items-center justify-between md:mt-0 md:justify-center md:!gap-5 2xl:!gap-12">
-            <li>
-              <a
-                className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white"
-                href=" "
-              >
-                Art
-              </a>
-            </li>
-            <li>
-              <a
-                className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white"
-                href=" "
-              >
-                Music
-              </a>
-            </li>
-            <li>
-              <a
-                className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white"
-                href=" "
-              >
-                Collection
-              </a>
-            </li>
-            <li>
-              <a
-                className="text-base font-medium text-brand-500 hover:text-brand-500 dark:text-white"
-                href=" "
-              >
-                <a href=" ">Sports</a>
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        {/* NFTs trending card */}
-        <div className="z-20 grid grid-cols-1 gap-5 md:grid-cols-3">
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="Abstract Colors"
-            author="Esthera Jackson"
-            price="0.91"
-            image={NFt3}
-          />
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="ETH AI Brain"
-            author="Nick Wilson"
-            price="0.7"
-            image={NFt2}
-          />
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="Mesh Gradients"
-            author="Will Smith"
-            price="2.91"
-            image={NFt4}
-          />
-        </div>
-
-        {/* Recenlty Added setion */}
-        <div className="mb-5 mt-5 flex items-center justify-between px-[26px]">
-          <h4 className="text-2xl font-bold text-navy-700 dark:text-white">
-            Recently Added
-          </h4>
-        </div>
-
-        {/* Recently Add NFTs */}
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="Abstract Colors"
-            author="Esthera Jackson"
-            price="0.91"
-            image={NFt4}
-          />
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="ETH AI Brain"
-            author="Nick Wilson"
-            price="0.7"
-            image={NFt5}
-          />
-          <NftCard
-            bidders={[avatar1, avatar2, avatar3]}
-            title="Mesh Gradients"
-            author="Will Smith"
-            price="2.91"
-            image={NFt6}
-          />
-        </div>
+    <div>
+      <LoadingOverlay
+         visible={loadingDelete}
+         zIndex={1000}
+         overlayProps={{ radius: 'sm', blur: 2 }}
+         loaderProps={{ color: '#422AFB', type: 'dots' }}
+       />
+     <div className="mt-5">
+     
+     <WeeklyRevenue add={<div>
+       <Button bg="#22C55E" leftSection={<AiOutlinePlus className="h-6 w-6 text-white"/>} onClick={open} >Nouveau</Button>
+     </div>}>
+     <>
+     <div className="flex justify-between items-center w-1/2">
+     <div className="w-full">
+            <InputField value={query} onChange={(e) => setQuery(e.currentTarget.value)}  placeholder="Rechercher ..." />
       </div>
-
-      {/* right side section */}
-
-      <div className="col-span-1 h-full w-full rounded-xl 2xl:col-span-1">
-        <TopCreatorTable
-          extra="mb-5"
-          tableData={tableDataTopCreators}
-          columnsData={tableColumnsTopCreators}
-        />
-        <HistoryCard />
+    </div>
+     <DataTable
+   columns={[{ accessor: 'civilite', textAlign: 'center' },{ accessor: 'prenom', textAlign: 'center' },{ accessor: 'nom',textAlign: 'center' },{ accessor: 'contact',textAlign: 'center' },{ accessor: 'nom_cabinet',textAlign: 'center' },
+   
+   {
+     accessor: 'actions',
+     title: <Box mr={6}>actions</Box>,
+     textAlign: 'center',
+     render: (rowData) => (
+         <div className="flex items-center justify-center space-x-1">
+       <ActionIcon onClick={() => handleUpdate(rowData)} bg='white'>
+       <BsFillPenFill className="text-green-500"/>
+       </ActionIcon>
+       <Popover width={200} position="bottom" withArrow shadow="md">
+   <Popover.Target>
+   <ActionIcon bg='white'>
+     <FaTrash className="text-red-500" />
+   </ActionIcon>
+   </Popover.Target>
+   <Popover.Dropdown>
+    <div className="flex flex-col">
+     <div className="flex-1">Etes-vous sûr de vouloir supprimer?</div>
+     <div className="flex-1 flex justify-between">
+       <Button variant="outline" color="red" onClick={() => confirm(rowData?._id)}>Oui</Button>
+       <Button variant="outline" color="green" onClick={cancel}>Non</Button>
+     </div>
+    </div>
+   </Popover.Dropdown>
+ </Popover>
       </div>
+     ),
+   },
+ ]}
+   records={records}
+   idAccessor="_id"
+   fetching={isLoading}
+   totalRecords={filtered(consultants)?.length}
+   recordsPerPage={10}
+   page={page}
+   onPageChange={(p) => setPage(p)}
+   borderRadius="lg"
+   shadow="lg"
+   horizontalSpacing="xs"
+   verticalAlign="top"
+ />
+     </>
+     
+     </WeeklyRevenue>
+   </div>
+
+   <Drawer opened={opened} onClose={close} title="CREATION D'UN(E) CONSULTANT(E)">
+   <LoadingOverlay
+         visible={loadingCreate}
+         zIndex={1000}
+         overlayProps={{ radius: 'sm', blur: 2 }}
+         loaderProps={{ color: '#422AFB', type: 'dots' }}
+       />
+     <form onSubmit={form.onSubmit(onCreate)}>
+     <Select
+        withAsterisk
+        label="CIVILITE"
+        {...form.getInputProps('civilite')}
+        data={["M.","Mme","Mlle"]}
+         />
+        <TextInput
+        withAsterisk
+        label="PRENOM"
+        {...form.getInputProps('prenom')}
+         />
+
+        <TextInput
+        withAsterisk
+        label="NOM"
+        {...form.getInputProps('nom')}
+         />
+
+        <TextInput
+        withAsterisk
+        label="CONTACT"
+        {...form.getInputProps('contact')}
+         />
+         <TextInput
+        withAsterisk
+        label="NOM DU CABINET"
+        {...form.getInputProps('nom_cabinet')}
+         />
+       
+       <div className="my-5">
+           <Button type="submit" bg="#422AFB">SAUVEGARDER</Button>
+       </div>
+       
+     </form>
+   </Drawer>
+   
+   <Drawer position="right" opened={openedU} onClose={closeU} title="MODIFICATION D'UN(E) CONSULTANT(E)">
+   <LoadingOverlay
+         visible={loadingUpdate}
+         zIndex={1000}
+         overlayProps={{ radius: 'sm', blur: 2 }}
+         loaderProps={{ color: '#422AFB', type: 'dots' }}
+       />
+     <form onSubmit={formU.onSubmit(onUpdate)}>
+     <Select
+        withAsterisk
+        label="CIVILITE"
+        {...formU.getInputProps('civilite')}
+        data={["M.","Mme","Mlle"]}
+         />
+     <TextInput
+        withAsterisk
+        label="PRENOM"
+        {...formU.getInputProps('prenom')}
+         />
+
+        <TextInput
+        withAsterisk
+        label="NOM"
+        {...formU.getInputProps('nom')}
+         />
+
+        <TextInput
+        withAsterisk
+        label="CONTACT"
+        {...formU.getInputProps('contact')}
+         />
+         <TextInput
+        withAsterisk
+        label="NOM DU CABINET"
+        {...formU.getInputProps('nom_cabinet')}
+         />
+       <div className="my-5">
+           <Button type="submit" bg="#422AFB">SAUVEGARDER</Button>
+       </div>
+       
+     </form>
+   </Drawer>
     </div>
   );
 };

@@ -1,27 +1,46 @@
-import React from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "components/navbar";
 import Sidebar from "components/sidebar";
 import Footer from "components/footer/Footer";
 import routes from "routes.js";
+import { useEffect, useState } from "react";
+import { getAuth } from "services/authservice";
+import { useQuery } from "@tanstack/react-query";
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import { useAppStore } from "../../variables/store";
+import AuthOutlet from '@auth-kit/react-router/AuthOutlet'
+import Formation from "views/admin/default/Formation";
 
 export default function Admin(props) {
   const { ...rest } = props;
   const location = useLocation();
-  const [open, setOpen] = React.useState(true);
-  const [currentRoute, setCurrentRoute] = React.useState("Main Dashboard");
+  const [open, setOpen] = useState(true);
+  const [currentRoute, setCurrentRoute] = useState("FORMATIONS");
 
-  React.useEffect(() => {
+  useEffect(() => {
     window.addEventListener("resize", () =>
       window.innerWidth < 1200 ? setOpen(false) : setOpen(true)
     );
   }, []);
-  React.useEffect(() => {
+  useEffect(() => {
     getActiveRoute(routes);
   }, [location.pathname]);
 
+  const auth =  useAuthUser();
+  const { setRole } = useAppStore();
+  const qk = ["auth", auth?.id];
+  useQuery({
+    queryKey:qk,
+    queryFn:() => getAuth(auth?.id), 
+    onSuccess(d){
+      setRole(d.role);
+    },
+    staleTime:1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+  });
+
   const getActiveRoute = (routes) => {
-    let activeRoute = "Main Dashboard";
+    let activeRoute = "FORMATIONS";
     for (let i = 0; i < routes.length; i++) {
       if (
         window.location.href.indexOf(
@@ -70,19 +89,25 @@ export default function Admin(props) {
           <div className="h-full">
             <Navbar
               onOpenSidenav={() => setOpen(true)}
-              logoText={"Horizon UI Tailwind React"}
+              logoText={"CROUSZ FORMATION"}
               brandText={currentRoute}
               secondary={getActiveNavbar(routes)}
               {...rest}
             />
             <div className="pt-5s mx-auto mb-auto h-full min-h-[84vh] p-2 md:pr-2">
               <Routes>
+              <Route element={<AuthOutlet fallbackPath='/auth' />}>
                 {getRoutes(routes)}
 
                 <Route
                   path="/"
-                  element={<Navigate to="/admin/default" replace />}
+                  element={<Navigate to="/admin/default" />}
                 />
+                <Route
+                  path="/default/:id"
+                  element={<Formation />}
+                />
+                </Route>
               </Routes>
             </div>
             <div className="p-3">
