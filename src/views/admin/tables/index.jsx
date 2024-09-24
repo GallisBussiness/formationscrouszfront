@@ -16,6 +16,7 @@ import { notifications } from "@mantine/notifications";
 
 const ParticipantSchema = yup.object().shape({
   prenom: yup.string().required('Invalide Prenom'),
+  matricule_de_solde: yup.string(),
   civilite: yup.string().required('Invalide Civilite'),
   nom: yup.string().required('Invalide Nom'),
   contact: yup.string().required('Invalide Contact'),
@@ -40,6 +41,7 @@ const Tables = () => {
   const form = useForm({
     initialValues: {
       prenom: '',
+      matricule_de_solde: '',
       civilite:'',
       nom: '',
       contact: '',
@@ -51,6 +53,7 @@ const Tables = () => {
     initialValues: {
     _id:'', 
     prenom: '',
+    matricule_de_solde:'',
     civilite:'',
     nom: '',
     contact: '',
@@ -107,10 +110,10 @@ const handleUpdate  = (data) => {
 }
 
 const filtered = (Participant = []) => {
-  return Participant?.filter(({ prenom,nom,contact,fonction }) => {
+  return Participant?.filter(({ prenom,nom,fonction,matricule_de_solde }) => {
     if (
       debouncedQuery !== '' &&
-      !`${prenom}${nom}${fonction}${contact}`.toLowerCase().includes(debouncedQuery.trim().toLowerCase())
+      !`${prenom}${nom}${fonction}${matricule_de_solde}`.toLowerCase().includes(debouncedQuery.trim().toLowerCase())
     )
       return false;
   
@@ -144,7 +147,7 @@ useEffect(() => {
       </div>
     </div>
      <DataTable
-   columns={[{ accessor: 'civilite', textAlign: 'center' },{ accessor: 'prenom', textAlign: 'center' },{ accessor: 'nom',textAlign: 'center' },{ accessor: 'contact',textAlign: 'center' },{ accessor: 'fonction',textAlign: 'center' },
+   columns={[{ accessor: 'matricule_de_solde', textAlign: 'center' },{ accessor: 'civilite', textAlign: 'center' },{ accessor: 'prenom', textAlign: 'center' },{ accessor: 'nom',textAlign: 'center' },{ accessor: 'contact',textAlign: 'center' },{ accessor: 'fonction',textAlign: 'center' },
    
    {
      accessor: 'actions',
@@ -192,7 +195,7 @@ useEffect(() => {
      </WeeklyRevenue>
    </div>
 
-   <Drawer opened={opened} onClose={close} title="CREATION D'UN(E) PARTICIPANT(E)">
+   <Drawer opened={opened} onClose={close} title="CREATION D'UN AGENT">
    <LoadingOverlay
          visible={loadingCreate}
          zIndex={1000}
@@ -218,6 +221,12 @@ useEffect(() => {
         {...form.getInputProps('nom')}
          />
 
+      <TextInput
+        withAsterisk
+        label="Matricule de Solde"
+        {...form.getInputProps('matricule_de_solde')}
+         />
+
         <TextInput
         withAsterisk
         label="CONTACT"
@@ -236,7 +245,7 @@ useEffect(() => {
      </form>
    </Drawer>
    
-   <Drawer position="right" opened={openedU} onClose={closeU} title="MODIFICATION D'UN(E) PARTICIPANT(E)">
+   <Drawer position="right" opened={openedU} onClose={closeU} title="MODIFICATION D'UN AGENT">
    <LoadingOverlay
          visible={loadingUpdate}
          zIndex={1000}
@@ -261,7 +270,11 @@ useEffect(() => {
         label="NOM"
         {...formU.getInputProps('nom')}
          />
-
+        <TextInput
+        withAsterisk
+        label="Matricule de Solde"
+        {...formU.getInputProps('matricule_de_solde')}
+         />
         <TextInput
         withAsterisk
         label="CONTACT"

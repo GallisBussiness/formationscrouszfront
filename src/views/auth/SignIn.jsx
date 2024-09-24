@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "../../services/authservice";
 import { useForm } from "@mantine/form";
-import { LoadingOverlay } from "@mantine/core";
+import { Loader, LoadingOverlay } from "@mantine/core";
 
 const schema = yup.object().shape({
   username: yup
@@ -39,7 +39,7 @@ export default function SignIn() {
       validate: yupResolver(schema),
     });
 
-    const { mutate, isLoading } = useMutation({
+    const { mutate, isPending } = useMutation({
       mutationFn:(data) => login(data),
       onSuccess(data) {
         if (
@@ -66,7 +66,7 @@ export default function SignIn() {
   return (
     <div className="mb-16 flex h-full w-full items-center justify-center px-2 md:mx-0 md:px-0 lg:mb-10 lg:items-center lg:justify-start">
       <LoadingOverlay
-         visible={isLoading}
+         visible={isPending}
          zIndex={1000}
          overlayProps={{ radius: 'sm', blur: 2 }}
          loaderProps={{ color: 'blue', type: 'dots' }}
@@ -109,7 +109,11 @@ export default function SignIn() {
         {/* Checkbox */}
        
         <button type="submit" className="linear mt-2 w-full rounded-xl bg-brand-500 py-[12px] text-base font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:text-white dark:hover:bg-brand-300 dark:active:bg-brand-200">
-          Se Connecter
+          <div className="flex items-center justify-center space-x-3">
+            <span>Se Connecter</span>
+            {isPending && <Loader size="md" color="white" type="dots" />}
+          </div>
+         
         </button>
        </form>
       </div>

@@ -32,10 +32,10 @@ const routes = [
     secondary: true,
   },
   {
-    name: "PARTICIPANTS",
+    name: "AGENTS",
     layout: "/admin",
     icon: <FaUsers className="h-6 w-6" />,
-    path: "participants",
+    path: "agents",
     component: <DataTables />,
   },
   {

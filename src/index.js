@@ -7,6 +7,7 @@ import '@mantine/core/styles.css';
 // you are using components from the corresponding package
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
+import '@mantine/dropzone/styles.css';
 import 'mantine-datatable/styles.layer.css';
 import "./index.css";
 

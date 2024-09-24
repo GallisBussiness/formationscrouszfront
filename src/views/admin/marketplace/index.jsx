@@ -20,7 +20,7 @@ const ConsultantSchema = yup.object().shape({
   civilite: yup.string().required('Invalide Civilite'),
   nom: yup.string().required('Invalide Nom'),
   contact: yup.string().required('Invalide Contact'),
-  nom_cabinet: yup.string().required('Invalide Nom'),
+  nom_cabinet: yup.string(),
 });
 
 const PAGE_SIZE = 10;

@@ -31,8 +31,7 @@ pdfMake.fonts = {
   }
 }
 
-const Banner1 = ({nom,consultant,debut,fin,participants}) => {
-
+const Banner1 = ({nom,consultant,debut,fin,participants,nom_cabinet}) => {
   const generateAttestation = () => {
  
     const docDefinition = {
@@ -150,10 +149,10 @@ const Banner1 = ({nom,consultant,debut,fin,participants}) => {
          {nom}
         </h4>
         <p className="max-w-full text-base font-medium text-[#E3DAFF] md:w-[64%] lg:w-[40%] xl:w-[72%] 2xl:w-[60%] 3xl:w-[45%]">
-         PAR: {consultant.prenom} {consultant.nom}
+         PAR: {consultant}
         </p>
         <p className="max-w-full text-base font-medium text-[#E3DAFF] md:w-[64%] lg:w-[40%] xl:w-[72%] 2xl:w-[60%] 3xl:w-[45%]">
-         CABINET: {consultant?.nom_cabinet}
+         CABINET: {nom_cabinet}
         </p>
 
 
@@ -169,7 +168,7 @@ const Banner1 = ({nom,consultant,debut,fin,participants}) => {
             DU {format(debut,'dd/MM/yyyy',{locale:fr})} AU {format(fin,'dd/MM/yyyy',{locale:fr})}
           </h4>
         </div>
-        <DatePicker type="range" allowDeselect={false} defaultDate={parseISO(debut)} value={[parseISO(debut),parseISO(fin)]}  minDate={parseISO(debut)} maxDate={parseISO(fin)}/>
+        <DatePicker type="range" locale="fr" allowDeselect={false} defaultDate={parseISO(debut)} value={[parseISO(debut),parseISO(fin)]}  minDate={parseISO(debut)} maxDate={parseISO(fin)}/>
       </div>
       </div>
       

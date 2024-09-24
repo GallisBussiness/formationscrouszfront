@@ -33,8 +33,7 @@ const FormationSchema = yup.object().shape({
   nom: yup.string().required('Invalide Nom'),
   debut: yup.date().required('invalide debut'),
   fin: yup.date().required('invalide debut'),
-  consultant: yup.string().required('Invalide Formation'),
-  participants: yup.array(yup.string()).required('Invalide participants'),
+  consultants: yup.array().required('Invalid consultants')
 });
 
 
@@ -61,8 +60,7 @@ const Dashboard = () => {
         nom: '',
         debut: new Date(),
         fin: new Date(),
-        consultant: '',
-        participants: [],
+        consultants: [],
     },
     validate: yupResolver(FormationSchema),
   });
@@ -72,8 +70,7 @@ const Dashboard = () => {
     nom: '',
     debut: new Date(),
     fin: new Date(),
-    consultant: '',
-    participants: [],
+    consultants: [],
     },
     validate: yupResolver(FormationSchema),
   });
@@ -121,9 +118,8 @@ const {mutate:deleteFormation,isLoading:loadingDelete} = useMutation({
 }
 
 const handleUpdate  = (data) => {
-  const {consultant,participants,debut,fin} = data;
-  const partips = participants.map(p => p._id);
-  formU.setValues({...data,consultant:consultant._id,participants:partips,debut: parseISO(debut),fin:parseISO(fin)});
+  const {consultants,debut,fin} = data;
+  formU.setValues({...data,consultants:consultants.map(c => c._id),debut: parseISO(debut),fin:parseISO(fin)});
   openU();
 }
 
@@ -145,7 +141,7 @@ const handleUpdate  = (data) => {
       setRecords(filtered(formations).slice(from, to) ?? []);
     }, [page,formations,debouncedQuery]);
 
-    const print = (v) => {
+    const print = () => {
      
      const docDefinition = {
       footer: {text:`CENTRE REGIONAL DES OEUVRES UNIVERSITAIRES SOCIALES DE ZIGUINCHOR`,fontSize: 8,bold: true,alignment: 'center'},
@@ -264,7 +260,7 @@ const handleUpdate  = (data) => {
                   [{text:`${k.nom}`,style:'info'},
                   {text: `${format(k.debut,'dd/MM/yyyy',{locale:fr})}`,style:'info'},
                  {text: `${format(k.fin,'dd/MM/yyyy',{locale:fr})}`,style:'info'},
-                 {text: `${k.consultant.prenom} ${k.consultant.nom}`,style:'info'}
+                 {text: `${k.consultants.map(c => c.prenom + " " + c.nom).join(",")}`,style:'info'}
                 ]
                 )),
             ],
@@ -298,7 +294,7 @@ const handleUpdate  = (data) => {
         />
         <Widget
           icon={<FaUsers className="h-7 w-7" />}
-          title={"TOTAL PARTICIPANTS"}
+          title={"TOTAL AGENTS"}
           subtitle={participants?.length}
         />
       </div>
@@ -389,10 +385,10 @@ const handleUpdate  = (data) => {
          loaderProps={{ color: 'blue', type: 'bars' }}
        />
      <form onSubmit={form.onSubmit(onCreate)}>
-     <Select
+     <MultiSelect
         withAsterisk
-        label="CONSULTANT"
-        {...form.getInputProps('consultant')}
+        label="CONSULTANTS"
+        {...form.getInputProps('consultants')}
         data={consultants?.map((c) => ({label:`${c.prenom} ${c.nom} ${c.nom_cabinet}`,value:c._id}))}
        />
         <TextInput
@@ -412,12 +408,6 @@ const handleUpdate  = (data) => {
         label="FIN DE LA FORMATION"
         {...form.getInputProps('fin')}
          />
-         <MultiSelect
-        withAsterisk
-        label="PARTICIPANTS"
-        {...form.getInputProps('participants')}
-        data={participants?.map((c) => ({label:`${c.prenom} ${c.nom} ${c.fonction}`,value:c._id}))}
-       />
        <div className="my-5">
            <Button type="submit" bg="#422AFB">SAUVEGARDER</Button>
        </div>
@@ -433,10 +423,10 @@ const handleUpdate  = (data) => {
          loaderProps={{ color: 'blue', type: 'bars' }}
        />
      <form onSubmit={formU.onSubmit(onUpdate)}>
-       <Select
+       <MultiSelect
         withAsterisk
-        label="CONSULTANT"
-        {...formU.getInputProps('consultant')}
+        label="CONSULTANTS"
+        {...formU.getInputProps('consultants')}
         data={consultants?.map((c) => ({label:`${c.prenom} ${c.nom} ${c.nom_cabinet}`,value:c._id}))}
        />
         <TextInput
@@ -456,12 +446,6 @@ const handleUpdate  = (data) => {
         label="FIN DE LA FORMATION"
         {...formU.getInputProps('fin')}
          />
-         <MultiSelect
-        withAsterisk
-        label="PARTICIPANTS"
-        {...formU.getInputProps('participants')}
-        data={participants?.map((c) => ({label:`${c.prenom} ${c.nom} ${c.fonction}`,value:c._id}))}
-       />
        <div className="my-5">
            <Button type="submit" bg="#422AFB">SAUVEGARDER</Button>
        </div>

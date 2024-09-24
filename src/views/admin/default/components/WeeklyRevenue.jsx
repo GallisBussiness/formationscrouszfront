@@ -8,7 +8,7 @@ const WeeklyRevenue = ({add,children}) => {
       </div>
 
       <div className="md:mt-16 lg:mt-0">
-        <div className="h-[250px] w-full xl:h-[350px]">
+        <div className="h-[250px] w-full xl:h-[450px]">
          {children}
         </div>
       </div>
